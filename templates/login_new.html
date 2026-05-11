@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - NeuroScan AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { max-width: 400px; width: 100%; background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 50px 40px; }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo h1 { font-size: 32px; color: #667eea; }
+        .logo p { color: #999; font-size: 14px; }
+        h2 { text-align: center; color: #333; margin-bottom: 30px; font-size: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; color: #555; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: border-color 0.3s; }
+        input:focus { outline: none; border-color: #667eea; }
+        button { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.3s; margin-top: 20px; }
+        button:hover { transform: translateY(-2px); }
+        .links { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; font-size: 13px; }
+        .links a { color: #667eea; text-decoration: none; font-weight: 600; }
+        .error { color: #dc3545; font-size: 13px; margin-top: 10px; padding: 10px; background: #f8d7da; border-radius: 5px; display: none; }
+        .success { color: #28a745; font-size: 13px; margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 5px; display: none; }
+        .loading { display: none; text-align: center; color: #667eea; margin-top: 15px; }
+        .remember-me { display: flex; align-items: center; }
+        input[type="checkbox"] { width: auto; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>🧠 NeuroScan AI</h1>
+            <p>Brain Tumor Detection System</p>
+        </div>
+
+        <h2>Doctor/Patient Login</h2>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" required placeholder="your.email@example.com">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required placeholder="Enter your password">
+            </div>
+
+            <div class="form-group remember-me">
+                <input type="checkbox" id="rememberMe">
+                <label for="rememberMe" style="margin: 0; font-weight: 400;">Remember me</label>
+            </div>
+
+            <button type="submit" id="submitBtn">🔓 Login</button>
+            <div class="loading" id="loading">⏳ Logging in...</div>
+            <div class="error" id="errorMsg"></div>
+            <div class="success" id="successMsg"></div>
+
+            <div class="links">
+                <a href="/register">Create New Account</a>
+                <a href="/">Back to Home</a>
+            </div>
+        </form>
+
+        <!-- Demo Credentials Info -->
+        <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e0e0e0; text-align: center; color: #999; font-size: 12px;">
+            <p style="margin-bottom: 10px;"><strong>Demo Test Accounts:</strong></p>
+            <p>📧 Doctor: demo@doctor.com | 🔐 Password: Demo123456</p>
+            <p>👤 Patient: demo@patient.com | 🔐 Password: Demo123456</p>
+            <p style="margin-top: 10px; color: #ccc;">(Create your own account for security)</p>
+        </div>
+    </div>
+
+    <script>
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+
+            submitBtn.style.display = 'none';
+            loading.style.display = 'block';
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store remember me preference
+                    if (rememberMe) {
+                        localStorage.setItem('rememberMe', 'true');
+                        localStorage.setItem('lastEmail', email);
+                    }
+
+                    successMsg.textContent = `✅ Login successful! Welcome ${data.user.full_name}`;
+                    successMsg.style.display = 'block';
+
+                    // Redirect based on role
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                } else {
+                    errorMsg.textContent = `❌ ${data.error}`;
+                    errorMsg.style.display = 'block';
+                    submitBtn.style.display = 'block';
+                    loading.style.display = 'none';
+                }
+            } catch (error) {
+                errorMsg.textContent = `❌ Login failed: ${error.message}`;
+                errorMsg.style.display = 'block';
+                submitBtn.style.display = 'block';
+                loading.style.display = 'none';
+            }
+        }
+
+        // Load remembered email
+        window.addEventListener('load', () => {
+            if (localStorage.getItem('rememberMe') === 'true') {
+                const email = localStorage.getItem('lastEmail');
+                if (email) {
+                    document.getElementById('email').value = email;
+                    document.getElementById('rememberMe').checked = true;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

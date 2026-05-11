@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Result – {{ scan.patient_name }}{% endblock %}
+{% block page_title %}Scan Result{% endblock %}
+
+{% block content %}
+<div class="content-header">
+  <h2>AI Analysis Result <span class="header-emoji">🔬</span></h2>
+  <p class="text-muted">Patient: <strong>{{ scan.patient_name }}</strong> &bull; Age: {{ scan.patient_age }} &bull; Date: {{ scan.scan_date }}</p>
+</div>
+
+<!-- Result Hero Area -->
+<div class="row g-4">
+  <!-- Left: Images -->
+  <div class="col-lg-5">
+    <div class="glass-card h-100 animate-card">
+      <h5 class="section-title"><i class="fas fa-image me-2"></i>MRI Images</h5>
+      <ul class="nav nav-tabs-custom mb-3" id="imageTabs">
+        <li><a href="#" class="tab-link active" data-tab="original">Original MRI</a></li>
+        {% if scan.heatmap_file %}<li><a href="#" class="tab-link" data-tab="heatmap">Grad-CAM Heatmap</a></li>{% endif %}
+      </ul>
+      <div class="image-panel" id="tab-original">
+        <img src="{{ url_for('static', filename='uploads/' + scan.filename) }}" alt="Original MRI" class="mri-image"/>
+        <div class="image-label">Original MRI Scan</div>
+      </div>
+      {% if scan.heatmap_file %}
+      <div class="image-panel" id="tab-heatmap" style="display:none">
+        <img src="{{ url_for('static', filename='heatmaps/' + scan.heatmap_file) }}" alt="Grad-CAM Heatmap" class="mri-image"/>
+        <div class="image-label">Grad-CAM Activation Map</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right: Prediction -->
+  <div class="col-lg-7">
+    <!-- Prediction Card -->
+    <div class="glass-card result-hero animate-card" style="border-left: 4px solid {{ info.color }}">
+      <div class="result-header">
+        <div class="result-icon" style="background: {{ info.color }}22; color: {{ info.color }}">
+          {{ info.icon }}
+        </div>
+        <div class="result-meta">
+          <div class="result-label">AI Prediction</div>
+          <div class="result-tumor" style="color: {{ info.color }}">{{ info.full_name }}</div>
+        </div>
+        <div class="risk-badge" style="background: {{ risk_color }}22; color: {{ risk_color }}; border: 1px solid {{ risk_color }}">
+          <i class="fas fa-shield-halved me-1"></i>{{ risk_level }}
+        </div>
+      </div>
+      <div class="confidence-section mt-3">
+        <div class="d-flex justify-content-between mb-1">
+          <span>Confidence Score</span>
+          <strong>{{ scan.confidence }}%</strong>
+        </div>
+        <div class="confidence-bar">
+          <div class="confidence-fill animate-bar" style="width: {{ scan.confidence }}%; background: {{ risk_color }}"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Probability Chart -->
+    <div class="glass-card mt-3 animate-card" style="animation-delay:0.1s">
+      <h5 class="section-title"><i class="fas fa-chart-bar me-2"></i>Tumor Probability Distribution</h5>
+      <canvas id="probChart" height="160"></canvas>
+    </div>
+
+    <!-- Medical Info Panel -->
+    <div class="glass-card mt-3 animate-card" style="animation-delay:0.2s">
+      <h5 class="section-title"><i class="fas fa-stethoscope me-2"></i>Clinical Assessment</h5>
+      <div class="medical-info-block">
+        <div class="medical-row">
+          <i class="fas fa-info-circle" style="color: {{ info.color }}"></i>
+          <div>
+            <div class="medical-label">Description</div>
+            <div class="medical-value">{{ info.description }}</div>
+          </div>
+        </div>
+        <div class="medical-row">
+          <i class="fas fa-notes-medical" style="color: {{ info.color }}"></i>
+          <div>
+            <div class="medical-label">Recommendation</div>
+            <div class="medical-value">{{ info.recommendation }}</div>
+          </div>
+        </div>
+        <div class="medical-row">
+          <i class="fas fa-signal" style="color: {{ info.color }}"></i>
+          <div>
+            <div class="medical-label">Risk Level</div>
+            <div class="medical-value"><span class="risk-text" style="color: {{ info.color }}">{{ info.risk }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-row mt-3 animate-card" style="animation-delay:0.3s">
+      <a href="{{ url_for('download_report', scan_id=scan.id) }}" class="btn btn-report">
+        <i class="fas fa-file-pdf me-2"></i>Download PDF Report
+      </a>
+      <a href="{{ url_for('upload') }}" class="btn btn-new-scan">
+        <i class="fas fa-plus me-2"></i>New Scan
+      </a>
+      <a href="{{ url_for('history') }}" class="btn btn-history-link">
+        <i class="fas fa-list me-2"></i>History
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- AI Disclaimer -->
+<div class="disclaimer-card mt-4 animate-card">
+  <i class="fas fa-triangle-exclamation me-2"></i>
+  <strong>Disclaimer:</strong> This analysis is generated by an AI system for informational purposes only. It does not replace professional medical diagnosis. Always consult a qualified neurosurgeon or neurologist.
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Image tab switching
+document.querySelectorAll('.tab-link').forEach(tab => {
+  tab.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.image-panel').forEach(p => p.style.display = 'none');
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).style.display = 'block';
+  });
+});
+
+// Probability chart
+const probData = {{ all_probs | tojson }};
+const labels = { pituitary: 'Pituitary', glioma: 'Glioma', notumor: 'No Tumor', meningioma: 'Meningioma' };
+const colorMap = { pituitary: '#f59e0b', glioma: '#ef4444', notumor: '#22c55e', meningioma: '#8b5cf6' };
+const keys = Object.keys(probData);
+const vals = keys.map(k => probData[k]);
+const bgColors = keys.map(k => colorMap[k] + '99');
+const borderColors = keys.map(k => colorMap[k]);
+
+window._probChartData = { keys, vals, bgColors, borderColors, labels };
+initProbChart();
+</script>
+{% endblock %}

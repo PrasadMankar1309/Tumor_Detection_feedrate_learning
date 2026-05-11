@@ -1,0 +1,10 @@
+*.h5
+*.pdf
+*.png
+*.jpg
+*.jpeg
+__pycache__/
+*.pyc
+reports/
+static/temp_process/
+models/

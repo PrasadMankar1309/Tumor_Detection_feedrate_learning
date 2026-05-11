@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="content-header">
+  <h2>Welcome Back, Dr. Admin <span class="header-emoji">👋</span></h2>
+  <p class="text-muted">Real-time AI tumor detection statistics and recent activity.</p>
+</div>
+
+<!-- Stats Row -->
+<div class="stats-grid">
+  <div class="stat-card stat-total animate-card">
+    <div class="stat-icon"><i class="fas fa-brain"></i></div>
+    <div class="stat-info">
+      <div class="stat-value counter" data-target="{{ total }}">0</div>
+      <div class="stat-label">Total Scans</div>
+    </div>
+    <div class="stat-bg-icon"><i class="fas fa-brain"></i></div>
+  </div>
+  <div class="stat-card stat-glioma animate-card" style="animation-delay:0.1s">
+    <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+    <div class="stat-info">
+      <div class="stat-value counter" data-target="{{ glioma }}">0</div>
+      <div class="stat-label">Glioma</div>
+    </div>
+    <div class="stat-bg-icon"><i class="fas fa-triangle-exclamation"></i></div>
+  </div>
+  <div class="stat-card stat-mening animate-card" style="animation-delay:0.2s">
+    <div class="stat-icon"><i class="fas fa-magnifying-glass"></i></div>
+    <div class="stat-info">
+      <div class="stat-value counter" data-target="{{ meningioma }}">0</div>
+      <div class="stat-label">Meningioma</div>
+    </div>
+    <div class="stat-bg-icon"><i class="fas fa-magnifying-glass"></i></div>
+  </div>
+  <div class="stat-card stat-pitu animate-card" style="animation-delay:0.3s">
+    <div class="stat-icon"><i class="fas fa-dna"></i></div>
+    <div class="stat-info">
+      <div class="stat-value counter" data-target="{{ pituitary }}">0</div>
+      <div class="stat-label">Pituitary</div>
+    </div>
+    <div class="stat-bg-icon"><i class="fas fa-dna"></i></div>
+  </div>
+  <div class="stat-card stat-none animate-card" style="animation-delay:0.4s">
+    <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+    <div class="stat-info">
+      <div class="stat-value counter" data-target="{{ notumor }}">0</div>
+      <div class="stat-label">No Tumor</div>
+    </div>
+    <div class="stat-bg-icon"><i class="fas fa-circle-check"></i></div>
+  </div>
+</div>
+
+<!-- Recent Scans + Quick Action -->
+<div class="row g-4 mt-1">
+  <div class="col-lg-8">
+    <div class="glass-card animate-card" style="animation-delay:0.5s">
+      <div class="card-header-custom mb-3">
+        <h5><i class="fas fa-clock-rotate-left me-2"></i>Recent Scans</h5>
+        <a href="{{ url_for('history') }}" class="btn-link-custom">View All →</a>
+      </div>
+      {% if scans %}
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr><th>ID</th><th>Patient</th><th>Prediction</th><th>Confidence</th><th>Date</th></tr>
+          </thead>
+          <tbody>
+            {% for scan in scans %}
+            <tr class="table-row-animate" style="animation-delay:{{ loop.index0 * 0.05 }}s">
+              <td><span class="id-badge">#{{ '%04d' % scan.id }}</span></td>
+              <td>
+                <div class="patient-name">{{ scan.patient_name }}</div>
+                <div class="patient-age text-muted">Age: {{ scan.patient_age }}</div>
+              </td>
+              <td>
+                <span class="tumor-badge tumor-{{ scan.prediction }}">
+                  {{ scan.prediction|title if scan.prediction != 'notumor' else 'No Tumor' }}
+                </span>
+              </td>
+              <td><strong>{{ scan.confidence }}%</strong></td>
+              <td><small class="text-muted">{{ scan.scan_date }}</small></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <p>No scans yet. Upload your first MRI to get started.</p>
+        <a href="{{ url_for('upload') }}" class="btn btn-primary-custom btn-sm-action">Upload MRI</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="glass-card animate-card" style="animation-delay:0.6s">
+      <div class="cta-card">
+        <div class="cta-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+        <h5>Upload New Scan</h5>
+        <p>Upload a brain MRI image for instant AI-powered tumor detection analysis.</p>
+        <a href="{{ url_for('upload') }}" class="btn btn-primary-custom btn-sm-action" style="width:100%;">
+          <i class="fas fa-upload me-2"></i>Upload MRI
+        </a>
+      </div>
+    </div>
+    <div class="glass-card mt-3 animate-card" style="animation-delay:0.7s">
+      <div class="cta-card">
+        <div class="cta-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
+          <i class="fas fa-chart-bar"></i>
+        </div>
+        <h5>View Analytics</h5>
+        <p>Explore charts and statistics from all processed scans.</p>
+        <a href="{{ url_for('analytics') }}" class="btn btn-primary-custom btn-sm-action" style="width:100%;background:linear-gradient(135deg,#22c55e,#16a34a);">
+          <i class="fas fa-chart-line me-2"></i>Analytics
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Upload MRI{% endblock %}
+{% block page_title %}Upload MRI Scan{% endblock %}
+
+{% block content %}
+<div class="content-header">
+  <h2>Upload Brain MRI <span class="header-emoji">📡</span></h2>
+  <p class="text-muted">Upload a brain MRI image to run AI-powered tumor detection analysis.</p>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="brain-loader">
+      <div class="brain-pulse"><i class="fas fa-brain"></i></div>
+      <div class="orbit orbit-1"><div class="dot"></div></div>
+      <div class="orbit orbit-2"><div class="dot"></div></div>
+    </div>
+    <div class="loading-progress">
+      <div class="progress-ring">
+        <svg viewBox="0 0 80 80" width="80" height="80">
+          <circle cx="40" cy="40" r="34" stroke-width="6" stroke="#6366f1" fill="none" stroke-dasharray="213" stroke-dashoffset="213" class="progress-circle"/>
+        </svg>
+      </div>
+    </div>
+    <h4 class="loading-title">AI is Analyzing the MRI Scan…</h4>
+    <p class="loading-sub">Running VGG19 deep learning model · Generating Grad-CAM heatmap</p>
+    <div class="loading-dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<div class="row g-4 justify-content-center">
+  <div class="col-lg-8">
+    <form method="POST" enctype="multipart/form-data" id="uploadForm" onsubmit="startLoading()">
+      <!-- Patient Info -->
+      <div class="glass-card mb-4 animate-card">
+        <h5 class="section-title"><i class="fas fa-user-injured me-2"></i>Patient Information</h5>
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label-custom">Patient Name</label>
+            <div class="input-group-custom">
+              <i class="fas fa-user input-icon"></i>
+              <input type="text" class="form-input-custom" name="patient_name" id="patient_name"
+                     placeholder="Enter patient full name" required/>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label-custom">Age</label>
+            <div class="input-group-custom">
+              <i class="fas fa-calendar input-icon"></i>
+              <input type="number" class="form-input-custom" name="patient_age" id="patient_age"
+                     placeholder="Age" min="1" max="120" required/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Zone -->
+      <div class="glass-card animate-card" style="animation-delay:0.1s">
+        <h5 class="section-title"><i class="fas fa-file-medical me-2"></i>MRI Scan Image</h5>
+
+        {% if error %}
+        <div class="alert-custom alert-danger-custom">
+          <i class="fas fa-circle-exclamation me-2"></i>{{ error }}
+        </div>
+        {% endif %}
+
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" name="file" accept=".jpg,.jpeg,.png" required hidden/>
+          <div class="upload-idle" id="uploadIdle">
+            <div class="upload-icon-wrap">
+              <i class="fas fa-cloud-arrow-up upload-icon-main"></i>
+              <div class="upload-ring"></div>
+            </div>
+            <h5>Drag & Drop MRI Image Here</h5>
+            <p>or <span class="browse-link" onclick="document.getElementById('fileInput').click()">browse to select</span></p>
+            <p class="upload-hint">Supports: JPG, JPEG, PNG</p>
+          </div>
+          <div class="upload-preview" id="uploadPreview" style="display:none">
+            <div class="preview-container">
+              <img id="previewImg" src="" alt="MRI Preview" class="preview-image"/>
+              <div class="preview-overlay">
+                <button type="button" class="remove-preview" onclick="removePreview()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <div class="file-info" id="fileInfo"></div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-analyze mt-4" id="analyzeBtn" disabled>
+          <i class="fas fa-microscope me-2"></i>Analyze MRI
+          <div class="btn-shimmer"></div>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Side Info -->
+  <div class="col-lg-4">
+    <div class="glass-card animate-card" style="animation-delay:0.2s">
+      <h5 class="section-title"><i class="fas fa-info-circle me-2"></i>Detection Classes</h5>
+      <div class="class-list">
+        <div class="class-item class-glioma">
+          <span class="class-dot"></span>
+          <div>
+            <div class="class-name">Glioma</div>
+            <div class="class-desc text-muted">High-risk brain tumor from glial cells</div>
+          </div>
+        </div>
+        <div class="class-item class-mening">
+          <span class="class-dot"></span>
+          <div>
+            <div class="class-name">Meningioma</div>
+            <div class="class-desc text-muted">Tumor from brain membrane layers</div>
+          </div>
+        </div>
+        <div class="class-item class-pitu">
+          <span class="class-dot"></span>
+          <div>
+            <div class="class-name">Pituitary</div>
+            <div class="class-desc text-muted">Located at base of brain</div>
+          </div>
+        </div>
+        <div class="class-item class-none">
+          <span class="class-dot"></span>
+          <div>
+            <div class="class-name">No Tumor</div>
+            <div class="class-desc text-muted">Healthy brain scan detected</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="glass-card mt-3 animate-card" style="animation-delay:0.3s">
+      <h5 class="section-title"><i class="fas fa-microchip me-2"></i>AI Model</h5>
+      <div class="model-info-list">
+        <div class="model-info-row"><i class="fas fa-network-wired me-2"></i><span>VGG19 Architecture</span></div>
+        <div class="model-info-row"><i class="fas fa-percent me-2"></i><span>95% Accuracy</span></div>
+        <div class="model-info-row"><i class="fas fa-layer-group me-2"></i><span>Grad-CAM Heatmap</span></div>
+        <div class="model-info-row"><i class="fas fa-expand me-2"></i><span>224×224 Input</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Drag and drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) setFile(file);
+});
+zone.addEventListener('click', e => {
+  if (e.target.closest('.upload-preview')) return;
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', e => {
+  if (e.target.files[0]) setFile(e.target.files[0]);
+});
+
+function setFile(file) {
+  const allowed = ['image/jpeg','image/jpg','image/png'];
+  if (!allowed.includes(file.type)) { alert('Please upload a JPG or PNG image.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('previewImg').src = e.target.result;
+    document.getElementById('fileInfo').textContent = file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
+    document.getElementById('uploadIdle').style.display = 'none';
+    document.getElementById('uploadPreview').style.display = 'flex';
+    document.getElementById('analyzeBtn').disabled = false;
+  };
+  reader.readAsDataURL(file);
+  // set file to input
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  document.getElementById('fileInput').files = dt.files;
+}
+
+function removePreview() {
+  document.getElementById('previewImg').src = '';
+  document.getElementById('fileInfo').textContent = '';
+  document.getElementById('uploadIdle').style.display = 'block';
+  document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('fileInput').value = '';
+}
+</script>
+{% endblock %}

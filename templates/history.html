@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Scan History{% endblock %}
+{% block page_title %}Scan History{% endblock %}
+
+{% block content %}
+<div class="content-header">
+  <h2>Patient Scan History <span class="header-emoji">📋</span></h2>
+  <p class="text-muted">All MRI scans analyzed by the NeuroScan AI system.</p>
+</div>
+
+<div class="glass-card animate-card">
+  <div class="card-header-custom mb-3">
+    <h5><i class="fas fa-database me-2"></i>All Records ({{ scans|length }})</h5>
+    <a href="{{ url_for('upload') }}" class="btn btn-primary-custom btn-sm-action">
+      <i class="fas fa-plus me-1"></i>New Scan
+    </a>
+  </div>
+
+  {% if scans %}
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>MRI</th>
+          <th>Patient</th>
+          <th>Prediction</th>
+          <th>Confidence</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for scan in scans %}
+        <tr class="table-row-animate" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+          <td><span class="id-badge">#{{ '%04d' % scan.id }}</span></td>
+          <td>
+            <div class="thumb-wrap">
+              <img src="{{ url_for('static', filename='uploads/' + scan.filename) }}"
+                   alt="MRI" class="mri-thumb" loading="lazy"/>
+            </div>
+          </td>
+          <td>
+            <div class="patient-name">{{ scan.patient_name }}</div>
+            <div class="patient-age text-muted">Age: {{ scan.patient_age }}</div>
+          </td>
+          <td>
+            <span class="tumor-badge tumor-{{ scan.prediction }}">
+              {{ scan.prediction|title if scan.prediction != 'notumor' else 'No Tumor' }}
+            </span>
+          </td>
+          <td>
+            <div class="confidence-bar-mini">
+              <div class="confidence-fill-mini" style="width: {{ scan.confidence }}%; background: {% if scan.confidence >= 90 %}#22c55e{% elif scan.confidence >= 70 %}#f59e0b{% else %}#ef4444{% endif %}"></div>
+            </div>
+            <small>{{ scan.confidence }}%</small>
+          </td>
+          <td><small class="text-muted">{{ scan.scan_date }}</small></td>
+          <td>
+            <div class="action-btns">
+              <a href="{{ url_for('result', scan_id=scan.id) }}" class="btn-icon-custom btn-view" title="View Result">
+                <i class="fas fa-eye"></i>
+              </a>
+              <a href="{{ url_for('download_report', scan_id=scan.id) }}" class="btn-icon-custom btn-pdf" title="Download PDF">
+                <i class="fas fa-file-pdf"></i>
+              </a>
+              <form method="POST" action="{{ url_for('delete_scan', scan_id=scan.id) }}" style="display:inline"
+                    onsubmit="return confirm('Delete this scan record permanently?')">
+                <button type="submit" class="btn-icon-custom btn-del" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-folder-open"></i>
+    <p>No scan records found. Upload your first MRI scan to begin.</p>
+    <a href="{{ url_for('upload') }}" class="btn btn-primary-custom">Upload MRI</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

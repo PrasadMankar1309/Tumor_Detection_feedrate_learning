@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}NeuroScan AI{% endblock %} | Brain Tumor Detection</title>
+  <meta name="description" content="AI-powered brain tumor detection using VGG19 deep learning model."/>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- FontAwesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Custom CSS -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-icon"><i class="fas fa-brain"></i></div>
+      <div class="logo-text">
+        <span class="logo-title">NeuroScan</span>
+        <span class="logo-sub">AI Platform</span>
+      </div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <ul class="sidebar-nav">
+      <li>
+        <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+          <i class="fas fa-chart-pie nav-icon"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('upload') }}" class="nav-link {% if request.endpoint in ['upload', 'upload_submit'] %}active{% endif %}">
+          <i class="fas fa-upload nav-icon"></i>
+          <span>Upload MRI</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('history') }}" class="nav-link {% if request.endpoint == 'history' %}active{% endif %}">
+          <i class="fas fa-clock-rotate-left nav-icon"></i>
+          <span>Scan History</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('analytics') }}" class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}">
+          <i class="fas fa-chart-bar nav-icon"></i>
+          <span>Analytics</span>
+        </a>
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      <div class="sidebar-divider"></div>
+      <div class="model-badge">
+        <i class="fas fa-microchip"></i>
+        <span>VGG19 · 95% Acc.</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper">
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+      <div class="topbar-right">
+        <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+          <i class="fas fa-moon" id="themeIcon"></i>
+        </div>
+        <a href="{{ url_for('logout') }}" class="theme-toggle" title="Logout" style="text-decoration:none;">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
+        <div class="user-avatar">
+          <i class="fas fa-user-md"></i>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content fade-in">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom JS -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

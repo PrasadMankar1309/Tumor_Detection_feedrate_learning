@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroScan AI | Brain Tumor Detection Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+      .landing-body { background: var(--bg-primary); min-height: 100vh; display: flex; flex-direction: column; }
+      .landing-nav { padding: 20px 0; border-bottom: 1px solid var(--border-color); }
+      .hero { flex: 1; display: flex; align-items: center; text-align: center; padding: 80px 0; position: relative; overflow: hidden; }
+      .hero h1 { font-size: 3.2rem; font-weight: 800; line-height: 1.15; }
+      .text-gradient { background: linear-gradient(to right, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+      .hero-badge { display: inline-flex; align-items: center; background: rgba(99,102,241,0.1); color: var(--text-primary); padding: 8px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; border: 1px solid rgba(99,102,241,0.2); margin-bottom: 24px; }
+      .feature-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 28px; transition: transform 0.3s, box-shadow 0.3s; }
+      .feature-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
+      .feature-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #fff; margin-bottom: 16px; }
+      .bg-g1 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+      .bg-g2 { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+      .bg-g3 { background: linear-gradient(135deg, #10b981, #059669); }
+      .bg-blob { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.3; z-index: 0; }
+      .blob-1 { background: #6366f1; width: 400px; height: 400px; top: -100px; left: -100px; }
+      .blob-2 { background: #a855f7; width: 500px; height: 500px; bottom: -200px; right: -100px; }
+    </style>
+</head>
+<body class="landing-body">
+    <nav class="landing-nav">
+      <div class="container d-flex justify-content-between align-items-center">
+        <a class="d-flex align-items-center gap-2" href="#" style="text-decoration:none;">
+          <div class="logo-icon"><i class="fas fa-brain"></i></div>
+          <span style="font-size:18px;font-weight:700;color:var(--text-primary);">NeuroScan <span style="color:#6366f1;">AI</span></span>
+        </a>
+        <div class="d-flex gap-3">
+          <a href="{{ url_for('login_page') }}" class="btn" style="border:1px solid var(--border-color);color:var(--text-primary);padding:8px 24px;border-radius:999px;">Login</a>
+          <a href="{{ url_for('login_page') }}" class="btn btn-primary-custom" style="padding:8px 24px;border-radius:999px;">Get Started</a>
+        </div>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="container position-relative" style="z-index:1;">
+        <div class="hero-badge"><i class="fas fa-microchip me-2" style="color:#6366f1;"></i> Powered by VGG19 Deep Learning</div>
+        <h1>Advanced Brain Tumor<br><span class="text-gradient">Detection Platform</span></h1>
+        <p class="text-muted mx-auto mt-3" style="max-width:600px;font-size:17px;">
+          Empowering hospitals and neurologists with highly accurate, instant AI-assisted MRI analysis. Detect Glioma, Meningioma, and Pituitary tumors with 95% confidence.
+        </p>
+        <div class="d-flex justify-content-center gap-3 mt-4">
+          <a href="{{ url_for('login_page') }}" class="btn btn-primary-custom" style="padding:14px 36px;border-radius:999px;font-size:16px;font-weight:700;">
+            Get Started <i class="fas fa-arrow-right ms-2"></i>
+          </a>
+        </div>
+      </div>
+      <div class="bg-blob blob-1"></div>
+      <div class="bg-blob blob-2"></div>
+    </section>
+
+    <section style="padding:60px 0;">
+      <div class="container">
+        <div class="text-center mb-5">
+          <h2 style="font-weight:700;">Enterprise Medical AI Features</h2>
+          <p class="text-muted">Built for scale, security, and precision in modern hospitals.</p>
+        </div>
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="feature-card h-100">
+              <div class="feature-icon bg-g1"><i class="fas fa-user-shield"></i></div>
+              <h5 style="font-weight:700;">Secure Authentication</h5>
+              <p class="text-muted">Session-based authentication to keep patient records and doctor sessions strictly secure.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="feature-card h-100">
+              <div class="feature-icon bg-g2"><i class="fas fa-network-wired"></i></div>
+              <h5 style="font-weight:700;">VGG19 Deep Learning</h5>
+              <p class="text-muted">Uses the vgg19_brain_tumor_95acc.h5 model with Grad-CAM heatmap visualization for all tumor classifications.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="feature-card h-100">
+              <div class="feature-icon bg-g3"><i class="fas fa-file-medical"></i></div>
+              <h5 style="font-weight:700;">Automated PDF Reports</h5>
+              <p class="text-muted">Generate comprehensive, downloadable medical PDF reports containing clinical recommendations.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer style="padding:20px 0;text-align:center;border-top:1px solid var(--border-color);">
+      <p class="text-muted mb-0">&copy; 2026 NeuroScan AI Platform. Medical use requires professional validation.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="content-header">
+  <h2>Welcome to NeuroScan AI <span class="header-emoji">🧠</span></h2>
+  <p class="text-muted">Hospital-grade brain tumor detection powered by VGG19 deep learning model.</p>
+</div>
+
+<!-- Stat Cards -->
+<div class="stats-grid">
+  <div class="stat-card stat-total animate-card">
+    <div class="stat-icon"><i class="fas fa-brain"></i></div>
+    <div class="stat-info">
+      <div class="stat-value counter" data-target="{{ total }}">0</div>
+      <div class="stat-label">Total Scans</div>
+    </div>
+    <div class="stat-bg-icon"><i class="fas fa-brain"></i></div>
+  </div>
+  <div class="stat-card stat-glioma animate-card" style="animation-delay:0.1s">
+    <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+    <div class="stat-info">
+      <div class="stat-value counter" data-target="{{ glioma }}">0</div>
+      <div class="stat-label">Glioma</div>
+    </div>
+    <div class="stat-bg-icon"><i class="fas fa-triangle-exclamation"></i></div>
+  </div>
+  <div class="stat-card stat-mening animate-card" style="animation-delay:0.2s">
+    <div class="stat-icon"><i class="fas fa-magnifying-glass"></i></div>
+    <div class="stat-info">
+      <div class="stat-value counter" data-target="{{ meningioma }}">0</div>
+      <div class="stat-label">Meningioma</div>
+    </div>
+    <div class="stat-bg-icon"><i class="fas fa-magnifying-glass"></i></div>
+  </div>
+  <div class="stat-card stat-pitu animate-card" style="animation-delay:0.3s">
+    <div class="stat-icon"><i class="fas fa-dna"></i></div>
+    <div class="stat-info">
+      <div class="stat-value counter" data-target="{{ pituitary }}">0</div>
+      <div class="stat-label">Pituitary</div>
+    </div>
+    <div class="stat-bg-icon"><i class="fas fa-dna"></i></div>
+  </div>
+  <div class="stat-card stat-none animate-card" style="animation-delay:0.4s">
+    <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+    <div class="stat-info">
+      <div class="stat-value counter" data-target="{{ notumor }}">0</div>
+      <div class="stat-label">No Tumor</div>
+    </div>
+    <div class="stat-bg-icon"><i class="fas fa-circle-check"></i></div>
+  </div>
+</div>
+
+<!-- Quick Action -->
+<div class="row g-4 mt-1">
+  <div class="col-lg-4">
+    <div class="glass-card cta-card h-100 animate-card" style="animation-delay:0.5s">
+      <div class="cta-icon"><i class="fas fa-upload"></i></div>
+      <h5>Upload New MRI</h5>
+      <p>Upload a brain MRI scan and get instant AI-powered tumor detection results.</p>
+      <a href="{{ url_for('upload') }}" class="btn btn-primary-custom">
+        <i class="fas fa-upload me-2"></i>Analyze MRI
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Scans -->
+  <div class="col-lg-8">
+    <div class="glass-card h-100 animate-card" style="animation-delay:0.6s">
+      <div class="card-header-custom">
+        <h5><i class="fas fa-clock-rotate-left me-2"></i>Recent Scans</h5>
+        <a href="{{ url_for('history') }}" class="btn-link-custom">View All</a>
+      </div>
+      {% if recent %}
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>#ID</th>
+              <th>Patient</th>
+              <th>Prediction</th>
+              <th>Confidence</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for scan in recent %}
+            <tr class="table-row-animate">
+              <td><span class="id-badge">#{{ '%04d' % scan.id }}</span></td>
+              <td>
+                <div class="patient-name">{{ scan.patient_name }}</div>
+                <div class="patient-age text-muted">Age: {{ scan.patient_age }}</div>
+              </td>
+              <td>
+                <span class="tumor-badge tumor-{{ scan.prediction }}">
+                  {{ scan.prediction|title if scan.prediction != 'notumor' else 'No Tumor' }}
+                </span>
+              </td>
+              <td>
+                <div class="confidence-bar-mini">
+                  <div class="confidence-fill-mini" style="width: {{ scan.confidence }}%; background: {% if scan.confidence >= 90 %}#22c55e{% elif scan.confidence >= 70 %}#f59e0b{% else %}#ef4444{% endif %}"></div>
+                </div>
+                <small>{{ scan.confidence }}%</small>
+              </td>
+              <td><small class="text-muted">{{ scan.scan_date }}</small></td>
+              <td>
+                <a href="{{ url_for('result', scan_id=scan.id) }}" class="btn-sm-custom">
+                  <i class="fas fa-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="fas fa-file-medical"></i>
+        <p>No scans yet. Upload your first MRI to get started.</p>
+        <a href="{{ url_for('upload') }}" class="btn btn-primary-custom">Upload MRI</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

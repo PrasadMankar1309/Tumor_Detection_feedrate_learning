@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload MRI Scan - NeuroScan AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .navbar h1 { font-size: 24px; }
+        .navbar-links { display: flex; gap: 25px; }
+        .navbar-links a { color: white; text-decoration: none; font-weight: 600; }
+        
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        
+        .upload-section { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .upload-section h2 { color: #333; margin-bottom: 10px; }
+        .upload-section p { color: #666; margin-bottom: 30px; }
+        
+        .upload-area { border: 3px dashed #667eea; border-radius: 10px; padding: 50px; text-align: center; cursor: pointer; transition: all 0.3s; background: #f8f9fa; }
+        .upload-area:hover { background: #f0f2ff; border-color: #764ba2; }
+        .upload-area.dragover { background: #e8eaff; border-color: #764ba2; }
+        .upload-area .icon { font-size: 48px; margin-bottom: 15px; }
+        .upload-area h3 { color: #667eea; margin-bottom: 10px; }
+        .upload-area p { color: #666; font-size: 14px; }
+        .upload-area input[type="file"] { display: none; }
+        
+        .form-group { margin-top: 25px; }
+        label { display: block; color: #555; font-weight: 600; margin-bottom: 8px; }
+        textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; resize: vertical; }
+        textarea:focus { outline: none; border-color: #667eea; }
+        
+        .button-group { display: flex; gap: 15px; margin-top: 30px; }
+        button { flex: 1; padding: 14px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        button:hover { background: #764ba2; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        button.secondary { background: #e0e0e0; color: #333; }
+        button.secondary:hover { background: #d0d0d0; }
+        
+        .preview { margin-top: 30px; text-align: center; display: none; }
+        .preview img { max-width: 300px; max-height: 300px; border-radius: 10px; margin-bottom: 15px; }
+        
+        .results { margin-top: 30px; display: none; }
+        .result-card { background: #f8f9fa; padding: 25px; border-radius: 10px; border-left: 4px solid; margin-bottom: 15px; }
+        .result-card.high-confidence { border-left-color: #dc3545; }
+        .result-card.medium-confidence { border-left-color: #ffc107; }
+        .result-card.low-confidence { border-left-color: #28a745; }
+        
+        .prediction-badge { display: inline-block; padding: 10px 20px; border-radius: 20px; font-weight: 600; margin: 5px; }
+        .prediction-badge.glioma { background: #ef4444; color: white; }
+        .prediction-badge.meningioma { background: #8b5cf6; color: white; }
+        .prediction-badge.pituitary { background: #f59e0b; color: white; }
+        .prediction-badge.notumor { background: #22c55e; color: white; }
+        
+        .progress { display: none; margin-top: 20px; }
+        .progress-bar { width: 100%; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); width: 0%; transition: width 0.3s; }
+        
+        .loading { text-align: center; color: #667eea; display: none; margin: 20px 0; }
+        .error-msg { color: #dc3545; padding: 15px; background: #f8d7da; border-radius: 8px; margin-bottom: 20px; display: none; }
+        .success-msg { color: #28a745; padding: 15px; background: #d4edda; border-radius: 8px; margin-bottom: 20px; display: none; }
+        
+        .heatmap-section { margin-top: 30px; display: none; }
+        .heatmap-section h3 { color: #333; margin-bottom: 15px; }
+        .heatmap-section img { max-width: 100%; border-radius: 10px; }
+        
+        .info-box { background: #e8eaff; border-left: 4px solid #667eea; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .info-box h4 { color: #667eea; margin-bottom: 10px; }
+        .info-box ul { margin-left: 20px; color: #555; }
+        .info-box li { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🧠 NeuroScan AI - Upload MRI Scan</h1>
+        <div class="navbar-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/history">History</a>
+            <a href="/analytics">Analytics</a>
+            <a href="/login" onclick="logout(); return false;">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg"></div>
+
+        <div class="upload-section">
+            <h2>Upload Brain MRI Scan 🧠</h2>
+            <p>Upload a high-quality MRI brain scan for AI-powered tumor detection analysis</p>
+
+            <div class="info-box">
+                <h4>📋 Supported Formats & Requirements:</h4>
+                <ul>
+                    <li>File formats: JPG, PNG, BMP, GIF (300KB - 10MB)</li>
+                    <li>Recommended resolution: 512x512 or higher</li>
+                    <li>Ensure good image clarity for accurate detection</li>
+                    <li>MRI modality: T1, T2, FLAIR, or other standard sequences</li>
+                </ul>
+            </div>
+
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <div class="icon">📤</div>
+                <h3>Click to select or drag & drop</h3>
+                <p>Drag your MRI image here or click to browse</p>
+                <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+            </div>
+
+            <div class="preview" id="preview">
+                <h3>Selected Image</h3>
+                <img id="previewImg" src="" alt="Preview">
+                <button class="secondary" onclick="clearSelection()">Change Image</button>
+            </div>
+
+            <div class="form-group">
+                <label>Clinical Notes (Optional)</label>
+                <textarea id="notes" placeholder="Add any relevant clinical notes or symptoms..." rows="4"></textarea>
+            </div>
+
+            <div class="progress" id="progress">
+                <p>Analyzing scan...</p>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">⏳ Processing your scan, please wait...</div>
+
+            <div class="button-group">
+                <button id="analyzeBtn" onclick="analyzeScan()" style="display: none;">🔍 Analyze Scan</button>
+                <button id="cancelBtn" class="secondary" style="display: none;" onclick="cancelAnalysis()">Cancel</button>
+            </div>
+
+            <div class="results" id="results">
+                <h3 style="margin-bottom: 20px; color: #333;">Analysis Results</h3>
+
+                <div class="result-card" id="predictionCard">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <h4 id="predictionTitle" style="color: #333; margin-bottom: 5px;"></h4>
+                            <p id="predictionDesc" style="color: #666; font-size: 14px;"></p>
+                        </div>
+                        <div id="confidenceDisplay" style="font-size: 32px; font-weight: bold; color: #667eea;"></div>
+                    </div>
+                </div>
+
+                <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #333;">Probability Distribution</h4>
+                    <div id="probabilities"></div>
+                </div>
+
+                <div class="heatmap-section" id="heatmapSection">
+                    <h3>Grad-CAM Visualization (Attention Heatmap)</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Shows the regions the AI model focused on for the prediction</p>
+                    <img id="heatmapImg" src="" alt="Heatmap">
+                </div>
+
+                <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #333;">Clinical Information</h4>
+                    <div id="clinicalInfo"></div>
+                </div>
+
+                <div class="button-group" style="margin-top: 30px;">
+                    <button onclick="saveScan()" id="saveBtn">💾 Save to Records</button>
+                    <button onclick="generateReport()" id="reportBtn">📄 Generate Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let predictionResult = null;
+
+        const uploadArea = document.getElementById('uploadArea');
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('fileInput').files = files;
+                handleFileSelect({ target: { files: files } });
+            }
+        });
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file
+            if (!file.type.startsWith('image/')) {
+                showError('Please select a valid image file');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                showError('File size must be less than 10MB');
+                return;
+            }
+
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('preview').style.display = 'block';
+                uploadArea.style.display = 'none';
+                document.getElementById('analyzeBtn').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSelection() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('preview').style.display = 'none';
+            uploadArea.style.display = 'block';
+            document.getElementById('analyzeBtn').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+            predictionResult = null;
+        }
+
+        async function analyzeScan() {
+            if (!selectedFile) {
+                showError('Please select an image first');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            document.getElementById('progress').style.display = 'block';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('analyzeBtn').style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'block';
+
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    predictionResult = data;
+                    displayResults(data);
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError(`Analysis failed: ${error.message}`);
+            } finally {
+                document.getElementById('progress').style.display = 'none';
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('cancelBtn').style.display = 'none';
+                document.getElementById('analyzeBtn').style.display = 'block';
+            }
+        }
+
+        function displayResults(data) {
+            const info = data.info;
+            const confidence = data.confidence;
+
+            // Update prediction card
+            document.getElementById('predictionTitle').textContent = `${info.icon} ${info.full_name}`;
+            document.getElementById('predictionDesc').textContent = info.description;
+            document.getElementById('confidenceDisplay').textContent = confidence + '%';
+
+            // Update color based on confidence
+            const card = document.getElementById('predictionCard');
+            card.className = 'result-card';
+            if (confidence >= 85) card.classList.add('high-confidence');
+            else if (confidence >= 70) card.classList.add('medium-confidence');
+            else card.classList.add('low-confidence');
+
+            // Show probabilities
+            let probsHTML = '';
+            for (const [pred, prob] of Object.entries(data.all_probs)) {
+                const percent = Math.round(prob);
+                const width = percent + '%';
+                probsHTML += `
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span style="font-weight: 600; color: #333;">${pred.toUpperCase()}</span>
+                            <span style="color: #667eea; font-weight: 600;">${prob.toFixed(1)}%</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden;">
+                            <div style="height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); width: ${width};"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('probabilities').innerHTML = probsHTML;
+
+            // Show heatmap if available
+            if (data.heatmap_b64) {
+                document.getElementById('heatmapImg').src = data.heatmap_b64;
+                document.getElementById('heatmapSection').style.display = 'block';
+            }
+
+            // Show clinical info
+            let clinicalHTML = `
+                <p><strong>Symptoms:</strong> ${info.symptoms}</p>
+                <p style="margin-top: 10px;"><strong>Treatments:</strong> ${info.treatments}</p>
+                <p style="margin-top: 10px;"><strong>Recommended Medicines:</strong> ${info.medicines}</p>
+                <p style="margin-top: 10px;"><strong>Prevention:</strong> ${info.prevention}</p>
+            `;
+            document.getElementById('clinicalInfo').innerHTML = clinicalHTML;
+
+            document.getElementById('results').style.display = 'block';
+        }
+
+        async function saveScan() {
+            if (!predictionResult) return;
+
+            const scanData = {
+                prediction: predictionResult.prediction,
+                confidence: predictionResult.confidence,
+                all_probs: predictionResult.all_probs,
+                heatmap_image_url: predictionResult.heatmap_b64 ? 'heatmap_stored' : null,
+                notes: document.getElementById('notes').value
+            };
+
+            try {
+                const response = await fetch('/api/scan/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(scanData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('✅ Scan saved to your medical records successfully!');
+                    predictionResult.scan_id = data.scan_id;
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError(`Save failed: ${error.message}`);
+            }
+        }
+
+        async function generateReport() {
+            if (!predictionResult || !predictionResult.scan_id) {
+                showError('Please save the scan first');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        patient_name: 'Patient',
+                        scan_id: predictionResult.scan_id,
+                        prediction: predictionResult.prediction,
+                        confidence: predictionResult.confidence,
+                        doctor_name: 'NeuroScan AI',
+                        hospital_name: 'NeuroScan AI System'
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `NeuroScan_Report_${new Date().getTime()}.pdf`;
+                    link.click();
+                    showSuccess('✅ Report generated and downloaded successfully!');
+                } else {
+                    showError('Report generation failed');
+                }
+            } catch (error) {
+                showError(`Report error: ${error.message}`);
+            }
+        }
+
+        function showError(msg) {
+            const errorEl = document.getElementById('errorMsg');
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+            setTimeout(() => errorEl.style.display = 'none', 5000);
+        }
+
+        function showSuccess(msg) {
+            const successEl = document.getElementById('successMsg');
+            successEl.textContent = msg;
+            successEl.style.display = 'block';
+            setTimeout(() => successEl.style.display = 'none', 5000);
+        }
+
+        function cancelAnalysis() {
+            document.getElementById('progress').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('analyzeBtn').style.display = 'block';
+            document.getElementById('cancelBtn').style.display = 'none';
+        }
+
+        async function logout() {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

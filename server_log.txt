@@ -1,0 +1,4 @@
+[*] Loading VGG19 Brain Tumor Model...
+[+] Model loaded successfully.
+ * Serving Flask app 'app'
+ * Debug mode: on

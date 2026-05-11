@@ -1,0 +1,23 @@
+﻿Status Code: 200
+JSON: {
+  "all_probs": {
+    "glioma": 0.0,
+    "meningioma": 100.0,
+    "notumor": 0.0,
+    "pituitary": 0.0
+  },
+  "confidence": 100.0,
+  "heatmap_b64": "TRUNCATED_B64",
+  "info": {
+    "color": "#8b5cf6",
+    "description": "Meningioma arises from the meninges \u2014 the membranes that surround the brain and spinal cord. Most are slow-growing and benign.",
+    "full_name": "Meningioma Tumor",
+    "icon": "\ud83d\udd0d",
+    "medicines": "Anti-seizure drugs (Levetiracetam), Corticosteroids (Dexamethasone).",
+    "prevention": "Minimize unnecessary head radiation. Maintain healthy BMI.",
+    "symptoms": "Changes in vision, hearing loss, morning headaches, seizure, memory loss.",
+    "treatments": "Active surveillance (watchful waiting), craniotomy, radiosurgery."
+  },
+  "prediction": "meningioma",
+  "success": true
+}
